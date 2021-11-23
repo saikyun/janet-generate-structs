@@ -53,6 +53,7 @@
          [argv [* Janet]]]
         Janet
         (def th TileHolder* (janet_getabstract argv 0 &AT_TileHolder))
+
         (def t Tile* (janet_getabstract argv 1 &AT_Tile))
 
         (if (== (-> th used) (-> th size))
@@ -60,9 +61,15 @@
             (set (-> th size) (* 2 (-> th size)))
             (set (-> th tiles) (realloc (-> th tiles) (* (-> th size) (sizeof Tile*))))))
 
-        (set (index (-> th tiles) (++ (-> th used))) t)
+        (def t2 Tile* (malloc (sizeof Tile)))
+        (set t2->y t->y)
+        (set t2->x t->x)
+        (set t2->color t->color)
 
-        (index argv 0))
+        (set (index (-> th tiles) (-> th used)) t2)
+        (++ (-> th used))
+
+        (janet_wrap_abstract th))
 
       (defn render_tile_holder
         [[argc int32_t]
@@ -72,14 +79,18 @@
 
         (def i int 0)
 
-        (while (< i (-> th used))
+        (def size int 1)
+
+        (while (< i 1000)
           (do
             (def t Tile* (index (-> th tiles) i))
-            (DrawRectangle (* 100 (-> t x))
-                           (* 100 (-> t y))
-                           100
-                           100
-                           (-> t color))
+            (if (and (< (-> t x) 100)
+                    (< (-> t y) 100))
+              (DrawRectangle (* size (-> t x))
+                             (* size (-> t y))
+                             size
+                             size
+                             (-> t color)))
             (++ i)))
 
         (janet_wrap_nil))
@@ -139,18 +150,22 @@
 #(doc "test/")
 
 (print "call: " (test/get-screen-width))
-(def t (tracev (test/create-tile 1 1 [(math/random) (math/random) (math/random)])))
-(print "print tile: " (test/print-tile t))
+(def th (test/create-tile-holder 100))
+(loop [x :range [0 10000]
+       y :range [0 5000]
+       :let [t (test/create-tile x y [(math/random) (math/random) (math/random)])]]
+  (test/insert-tile-holder th t))
 
 (use freja/flow)
 
-(defn render
+(defn render2
   [_]
   #(rl-pop-matrix)
-  (rl-load-identity)
+  #(rl-load-identity)
+  (test/render-tile-holder th)
   #  (draw-rectangle 100 100 100 100 :red)
   #  (test/render-tile t)
   #(rl-push-matrix)
 )
 
-(start-game {:render render})
+(start-game {:render render2})
