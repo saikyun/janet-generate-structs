@@ -299,6 +299,11 @@
 
   # Statements
 
+  (defn emit-storage-classes
+    [classes]
+    (each class classes
+      (prin class " ")))
+
   (defn emit-declaration
     [v vtype &opt value]
     (emit-type vtype)
@@ -310,7 +315,14 @@
   (setfn emit-statement
          [form]
          (case (get form 0)
-           'def (emit-declaration (form 1) (form 2) (form 3))
+           'def
+           (if (indexed? (form 1))
+             (do
+               (emit-storage-classes (form 1))
+               (emit-declaration (form 2) (form 3) (form 4)))
+             (do
+               (emit-declaration (form 1) (form 2) (form 3))))
+
            (emit-expression form true)))
 
   # Blocks
@@ -378,11 +390,6 @@
 
   # Top level forms
 
-  (defn emit-storage-classes
-    [classes]
-    (each class classes
-      (prin class " ")))
-
   (defn emit-function
     [classes name arglist rtype body]
     (print)
@@ -416,7 +423,8 @@
                   (if (indexed? (form 1))
                     (do
                       (emit-storage-classes (form 1))
-                      (emit-declaration (form 2) (form 3) (form 4)) (print ";"))
+                      (emit-declaration (form 2) (form 3) (form 4))
+                      (print ";"))
                     (do
                       (emit-declaration (form 1) (form 2) (form 3))
                       (print ";"))))

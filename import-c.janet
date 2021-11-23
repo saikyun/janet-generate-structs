@@ -20,6 +20,7 @@
     (os/execute ["cc"
                  "-I" "/usr/local/include/janet"
                  "-shared"
+                 "-fPIC"
                  "-o" so-name
                  (string target module-name ".c")
                  #"-lraylib"
