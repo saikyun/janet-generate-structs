@@ -4,7 +4,8 @@ PoC for generating a bunch of C structs
 ## dependencies
 
 - freja installed (doesn't work from source)
-- *nix
+
+only tested on ubuntu
 
 ## try it
 
