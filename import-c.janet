@@ -23,8 +23,9 @@
                  "-fPIC"
                  "-o" so-name
                  (string target module-name ".c")
-                 #"-lraylib"
-                 "/usr/local/lib/janet/freja-jaylib.so"] :p))
+                 ### if you run freja from source, you need the below row
+                 #"/usr/local/lib/janet/freja-jaylib.so"
+] :p))
 
   (import* (string "./" dir path/sep module-name "-" (hash src)) :as module-name))
 

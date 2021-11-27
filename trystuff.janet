@@ -85,7 +85,7 @@
           (do
             (def t Tile* (index (-> th tiles) i))
             (if (and (< (-> t x) 1000)
-                    (< (-> t y) 1000))
+                     (< (-> t y) 1000))
               (DrawRectangle (* size (-> t x))
                              (* size (-> t y))
                              size
@@ -145,32 +145,35 @@
 
 (print src)
 
-(ic/import-c* "test" src :target "cgen")
+(ic/import-c* "test" src)
 
-#(doc "test/")
-
-(print "call: " (test/get-screen-width))
-(def th (test/create-tile-holder 100))
-# works with 10k x 5k too, but takes so long to allocate etc
-(loop [x :range [0 1000]
-       y :range [0 1000]
-       :let [t (test/create-tile x y [(math/random) (math/random) (math/random)])]]
-  (test/insert-tile-holder th t))
-
+(use freja-jaylib)
 (use freja/flow)
 
-(defn render2
-  [_]
-  #(rl-pop-matrix)
+#(doc "test/")
+(do comment
+  (print "call: " (test/get-screen-width))
+  (def th (test/create-tile-holder 100))
+  # works with 10k x 5k too, but takes so long to allocate etc
+  (loop [x :range [0 1000]
+         y :range [0 1000]
+         :let [t (test/create-tile x y [(math/random) (math/random) (math/random)])]]
+    (test/insert-tile-holder th t))
 
-  #(rl-push-matrix)
-  (rl-load-identity)
-  (rl-translatef 1000 500 0)
-  (test/render-tile-holder th)
-  #(rl-pop-matrix)
-  #  (draw-rectangle 100 100 100 100 :red)
-  #  (test/render-tile t)
-  #(rl-push-matrix)
+  (use freja/flow)
+
+  (defn render2
+    [_]
+    #(rl-pop-matrix)
+
+    #(rl-push-matrix)
+    (rl-load-identity)
+    (rl-translatef 1000 500 0)
+    (test/render-tile-holder th)
+    #(rl-pop-matrix)
+    #  (draw-rectangle 100 100 100 100 :red)
+    #  (test/render-tile t)
+    #(rl-push-matrix)
 )
 
-(start-game {:render render2})
+  (start-game {:render render2}))
