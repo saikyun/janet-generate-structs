@@ -1,7 +1,7 @@
 # janet-generate-structs
 PoC for generating a bunch of C structs
 
-No dependencies should be needed, but the C compilation currently only works on linux (ubuntu).
+No dependencies other than `cc` should be needed, but the C compilation currently only works on linux (ubuntu).
 
 ## dependencies for example `trystuff.janet`
 
