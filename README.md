@@ -16,6 +16,8 @@ freja trystuff.janet
 
 Hit ctrl+l
 
+You should now see a lot of noise.
+
 ## description
 
 `trystuff.janet` -- uses jpm's cgen to generate code for structs, then allocates a bunch of them and renders them  \
