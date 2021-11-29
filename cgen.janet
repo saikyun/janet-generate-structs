@@ -461,3 +461,36 @@
   "Macro that automatically quotes the body provided and calls (print-ir ...) on the body."
   [& body]
   ~(,print-ir ',body))
+
+
+# utility
+(defmacro ir-janet-str
+  [modname & body]
+  (def funcs
+    (->> body
+         (filter |(= 'defn (first $)))
+         (map |(in $ 1))))
+
+  (def declarations
+    ~(def [static const] "cfuns[]" JanetReg
+       [array
+        ,;(seq [n :in funcs]
+            ~[array ,(string n) ,n ""])
+        [array NULL NULL NULL]]))
+
+  ~(with-dyns [:out @""]
+     (,print-ir
+       ['(@ include "<janet.h>")
+
+        ',;body
+
+        ',declarations
+
+        ~(inline
+           ,(string
+              ``
+        JANET_MODULE_ENTRY(JanetTable *env) {
+          janet_cfuns (env, "`` ,(string modname) ``", cfuns);
+        }
+        ``))])
+     (string (dyn :out))))
