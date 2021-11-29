@@ -1,5 +1,5 @@
-(import ../import-c :as ic :fresh true)
-(import ../cgen :fresh true)
+(import ../import-c/import-c :as ic :fresh true)
+(import ../import-c/cgen :fresh true)
 
 (def src
   (cgen/ir-janet-str
