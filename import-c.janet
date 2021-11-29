@@ -4,6 +4,25 @@
   [module-name src &keys {:target target
                           :dir dir}]
 
+  (def hostos (os/which))
+  (def iswin (= :windows hostos))
+  (def win-prefix (os/getenv "JANET_WINDOWS_PREFIX"))
+  (def prefix (dyn :prefix (os/getenv "JANET_PREFIX" (os/getenv "PREFIX" "/usr/local"))))
+
+  (def headerpath (dyn :headerpath (os/getenv "JANET_HEADERPATH" (if win-prefix
+                                                                   (string win-prefix "/C")
+                                                                   (string prefix "/include/janet")))))
+
+  (def cc (if iswin "cl.exe" "cc"))
+
+  (def dynamic-cflags (case hostos
+                        :windows @["/LD"]
+                        @["-fPIC"]))
+  (def dynamic-lflags (case hostos
+                        :windows @["/DLL"]
+                        :macos @["-shared" "-undefined" "dynamic_lookup" "-lpthread"]
+                        @["-shared" "-lpthread"]))
+
   (default dir ".temp")
 
   (os/mkdir dir)
@@ -17,10 +36,10 @@
   (unless (os/stat so-name)
     (spit (string target module-name ".c") src)
 
-    (os/execute ["cc"
-                 "-I" "/usr/local/include/janet"
-                 "-shared"
-                 "-fPIC"
+    (os/execute [cc # "cc"
+                 "-I" headerpath
+                 ;dynamic-lflags
+                 ;dynamic-cflags
                  "-o" so-name
                  (string target module-name ".c")
                  ### if you run freja from source, you need the below row
