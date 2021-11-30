@@ -482,15 +482,16 @@
      (,print-ir
        ['(@ include "<janet.h>")
 
-        ',;body
+        # sorry about this, just trial and error
+        ;',body
 
         ',declarations
 
         ~(inline
            ,(string
               ``
-        JANET_MODULE_ENTRY(JanetTable *env) {
-          janet_cfuns (env, "`` ,(string modname) ``", cfuns);
-        }
-        ``))])
+              JANET_MODULE_ENTRY(JanetTable *env) {
+                  janet_cfuns (env, "`` ,(string modname) ``", cfuns);
+              }
+              ``))])
      (string (dyn :out))))

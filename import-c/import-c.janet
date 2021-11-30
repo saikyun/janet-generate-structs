@@ -38,15 +38,17 @@
 
     (os/execute [cc # "cc"
                  "-I" headerpath
-                 ;dynamic-lflags
                  ;dynamic-cflags
                  "-o" so-name
                  (string target module-name ".c")
-                 ### if you run freja from source, you need the below row
+                 ;dynamic-lflags
+                 ### using freja from source, or just using janet, you need the below row
                  #"/usr/local/lib/janet/freja-jaylib.so"
+                 # or with janet you can just do
+                 #"-lraylib"
 ] :p))
 
-  (import* (string "./" dir path/sep module-name "-" (hash src)) :as module-name))
+  (import* (string "/" dir path/sep module-name "-" (hash src)) :as module-name))
 
 
 (comment
