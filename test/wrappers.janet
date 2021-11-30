@@ -2,17 +2,14 @@
 (import ../import-c/cgen :fresh true)
 
 
-(def body
-  ~[,(cgen/defnj
-       double_num
-       [[x float]]
-       float
-       (+ x x))])
-
 (def src
   (cgen/ir-janet-str*
     'double-module
-    body))
+    [(cgen/defnj
+       double_num
+       [[x float]]
+       float
+       (+ x x))]))
 
 (ic/import-c* "double-module" src)
 

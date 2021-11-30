@@ -502,7 +502,7 @@
 
 (defmacro ir-janet-str
   [modname & body]
-  ~(,ir-janet-str* ,modname ',body))
+  ~(,ir-janet-str* ',modname ',body))
 
 
 (def wrappers
