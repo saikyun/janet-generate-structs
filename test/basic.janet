@@ -8,7 +8,7 @@
              [argv [* Janet]]]
       Janet
       (def x int (janet_getinteger argv 0))
-      (janet_wrap_number (+ x x)))))
+      (return (janet_wrap_number (+ x x))))))
 
 (ic/import-c* "double-module" src)
 
