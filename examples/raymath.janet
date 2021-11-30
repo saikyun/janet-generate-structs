@@ -1,19 +1,38 @@
 (import ../import-c/import-c :as ic :fresh true)
-(import ../import-c/cgen :fresh true)
+(import ../import-c/cgen :as c :fresh true)
+
+(def body
+  ~[(@ include "<raymath.h>")
+
+    ,(c/defnj
+       lerp
+       [[start float]
+        [stop float]
+        [v float]]
+       float
+       (Lerp start stop v))
+
+    ,(c/defnj
+       lerpp
+       [[start float]
+        [stop float]
+        [v float]]
+       void
+       (printf "Lerp: %f\n" (Lerp start stop v)))])
 
 (def src
-  (cgen/ir-janet-str
+  (c/ir-janet-str*
     "raymath"
-    (@ include "<raymath.h>")
+    body))
 
-    (defn lerp [[argc int32_t]
-                [argv [* Janet]]]
-      Janet
-      
-      (janet_wrap_number (Lerp (janet_getnumber argv 0)
-                               (janet_getnumber argv 1)
-                               (janet_getnumber argv 2))))))
+(print)
+(print src)
+(print)
 
 (ic/import-c* "raymath" src)
 
 (pp (raymath/lerp 5 10 0.5))
+
+(pp (raymath/lerpp 5 10 0.5))
+#
+

@@ -464,8 +464,8 @@
 
 
 # utility
-(defmacro ir-janet-str
-  [modname & body]
+(defn ir-janet-str*
+  [modname body]
   (def funcs
     (->> body
          (filter |(= 'defn (first $)))
@@ -478,20 +478,84 @@
             ~[array ,(string n) ,n ""])
         [array NULL NULL NULL]]))
 
-  ~(with-dyns [:out @""]
-     (,print-ir
-       ['(@ include "<janet.h>")
+  (with-dyns [:out @""]
+    (print-ir
+      ['(@ include "<janet.h>")
 
-        # sorry about this, just trial and error
-        ;',body
+       ;body
 
-        ',declarations
+       declarations
 
-        ~(inline
-           ,(string
-              ``
-              JANET_MODULE_ENTRY(JanetTable *env) {
-                  janet_cfuns (env, "`` ,(string modname) ``", cfuns);
-              }
-              ``))])
-     (string (dyn :out))))
+       ~(inline
+          ,(string
+             ``
+             
+             JANET_MODULE_ENTRY(JanetTable *env) {
+               janet_cfuns (env, "
+             ``
+             (string modname)
+             ``
+             ", cfuns);
+             }
+             ``))])
+    (string (dyn :out))))
+
+(defmacro ir-janet-str
+  [modname & body]
+  ~(,ir-janet-str* ,modname ',body))
+
+
+(def wrappers
+  @{'float 'janet_wrap_number
+    'void 'janet_wrap_nil})
+
+(defn wrapper
+  [type v]
+  (if (= type 'void)
+    ~(do ,v
+       (,(wrappers type)))
+    ~(return (,(wrappers type)
+               ,v))))
+
+(def unwrappers
+  @{'float 'janet_getnumber})
+
+(defn unwrapper
+  [type sym i]
+  ~(,(unwrappers type)
+     ,sym
+     ,i))
+
+(defn defnj*
+  ``
+  Takes args / return-type in C style,
+  returns IR for a C function that takes Janet data in and out.
+  Unwraps all args, and wraps the return value.
+  
+  j is for Janet
+  ``
+  [name
+   args
+   return-type
+   & body]
+  ~(defn ,name
+     [[argc int32_t]
+      [argv [* Janet]]]
+     Janet
+     ,;(seq [i :range [0 (length args)]
+             :let [[sym type] (in args i)]]
+         ~(def ,sym ,type
+            ,(unwrapper type
+                        'argv
+                        i)))
+     ,;(slice body 0 -2)
+     ,(wrapper return-type
+               (last body))))
+
+(defmacro defnj
+  ``
+  Macro version of defnj*.
+  ``
+  [name args return-type & body]
+  #         # no clue what this means
+  ~(,defnj* ',name ',args ',return-type ;',body))
